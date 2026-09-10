@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project X - إدارة المكتبة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="welcomeScreen">
+        <div class="welcome-content">
+            <h1>🎉 مرحباً بكم في Project X!</h1>
+            <p>نظام إدارة المكتبات الحديث</p>
+            <div class="welcome-icon">📚</div>
+            <button onclick="continueToApp()">ابدأ الآن ➡️</button>
+        </div>
+    </div>
+
+    <header class="top-bar">
+        <div class="icon-wrapper">
+            <button class="icon-btn" onclick="openNotifications()">🔔</button>
+            <span id="notificationBadge" class="notification-badge">0</span>
+        </div>
+        <h1>📚 Project <span class="redX">X</span></h1>
+        <button class="icon-btn" onclick="openSettings()">⚙️</button>
+    </header>
+
+    <main>
+        <section class="main-buttons">
+            <div class="dropdown-group">
+                <button class="full-btn" onclick="openAddDropdown()">➕ إضافة جديد</button>
+                <div id="addDropdown" class="dropdown-content">
+                    <button class="full-btn" onclick="openAddBookModal()">📖 إضافة كتاب</button>
+                    <button class="full-btn" onclick="promptAddUser()">👤 إضافة مستخدم</button>
+                </div>
+            </div>
+
+            <div class="dropdown-group">
+                <button class="full-btn" onclick="openListDropdown()">📋 القوائم</button>
+                <div id="listDropdown" class="dropdown-content">
+                    <button class="full-btn" onclick="openBooksModal()">📚 قائمة الكتب</button>
+                    <button class="full-btn" onclick="openUsersModal()">👥 قائمة المستخدمين</button>
+                    <button class="full-btn" onclick="openLoansModal()">📝 الاستعارات النشطة</button>
+                </div>
+            </div>
+
+            <button class="full-btn" onclick="exportData()">💾 نسخة احتياطية</button>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <p>© جميع الحقوق محفوظة 2026 Project X - نظام إدارة المكتبات</p>
+        <p>Version 2.0.1</p>
+    </footer>
+
+    <div id="addBookModal" class="modal">
+        <div class="modal-content">
+            <h3>📖 إضافة كتاب جديد</h3>
+            <input type="text" id="newBookName" placeholder="اسم الكتاب" required>
+            <input type="text" id="newBookAuthor" placeholder="اسم المؤلف" required>
+            <select id="newBookCategory" required>
+                <option value="">اختر الفئة</option>
+                <option>علوم</option><option>تاريخ</option><option>رياضيات</option>
+                <option>أدب</option><option>تكنولوجيا</option><option>فلسفة</option><option>فنون</option>
+            </select>
+            <input type="number" id="newBookCopies" placeholder="عدد النسخ" min="1" value="1" required>
+            <div class="modal-actions">
+                <button class="full-btn" onclick="submitAddBook()">💾 حفظ الكتاب</button>
+                <button class="full-btn" onclick="closeAddBookModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="booksModal" class="modal">
+        <div class="modal-content wide">
+            <h3>📚 إدارة الكتب</h3>
+            <input type="text" id="searchBooks" placeholder="🔍 ابحث عن كتاب أو مؤلف أو فئة..." oninput="renderBooksList()">
+            <div class="toolbar">
+                <button class="full-btn" onclick="toggleSortBooks('name')">ترتيب بالاسم</button>
+                <button class="full-btn" onclick="toggleSortBooks('date')">ترتيب بالتاريخ</button>
+                <button class="full-btn" onclick="toggleSelectAllBooks()">تحديد/إلغاء الكل</button>
+                <button class="full-btn" id="borrowSelectedBtn" onclick="openSelectUserForBorrow()" disabled>استعارة المحدد</button>
+                <button class="full-btn danger" onclick="deleteSelectedBooks()">🗑️ حذف المحدد</button>
+            </div>
+            <div class="list-header"><span>الكتب</span><span id="booksResultsCount" class="results-count"></span></div>
+            <div id="booksList" class="scroll-list"></div>
+            <button class="full-btn" onclick="closeBooksModal()">إغلاق</button>
+        </div>
+    </div>
+
+    <div id="usersModal" class="modal">
+        <div class="modal-content wide">
+            <h3>👥 إدارة المستخدمين</h3>
+            <input type="text" id="searchUsers" placeholder="🔍 ابحث عن مستخدم أو رقم هاتف..." oninput="renderUsersList()">
+            <div class="toolbar">
+                <button class="full-btn" onclick="toggleSortUsers('name')">ترتيب بالاسم</button>
+                <button class="full-btn" onclick="promptAddUser()">➕ إضافة مستخدم</button>
+                <button class="full-btn" onclick="toggleSelectAllUsers()">تحديد/إلغاء الكل</button>
+                <button class="full-btn danger" onclick="deleteSelectedUsers()">🗑️ حذف المحدد</button>
+            </div>
+            <div class="list-header"><span>المستخدمون</span><span id="usersResultsCount" class="results-count"></span></div>
+            <div id="usersList" class="scroll-list"></div>
+            <button class="full-btn" onclick="closeUsersModal()">إغلاق</button>
+        </div>
+    </div>
+
+    <div id="loansModal" class="modal">
+        <div class="modal-content wide">
+            <h3>📝 الاستعارات النشطة</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>#</th><th>👤 المستخدم</th><th>📱 الهاتف</th><th>📚 الكتاب</th><th>📅 تاريخ الاستعارة</th><th>⏰ آخر موعد</th><th>⚡ الإجراء</th></tr></thead>
+                    <tbody id="loanTable"></tbody>
+                </table>
+            </div>
+            <button class="full-btn" onclick="closeLoansModal()">إغلاق</button>
+        </div>
+    </div>
+
+    <div id="selectUserModal" class="modal">
+        <div class="modal-content">
+            <h3>🤝 اختر المستخدم للاستعارة</h3>
+            <div class="autocomplete-wrapper">
+                <input type="text" id="searchSelectUser" placeholder="🔍 اكتب اسم المستخدم أو رقم الهاتف..." oninput="showUserSuggestions()" autocomplete="off">
+                <div id="userSuggestions" class="suggestions-box"></div>
+            </div>
+            <div class="or-divider">أو</div>
+            <button class="full-btn" onclick="promptAddUser(); closeSelectUserModal()">➕ إضافة مستخدم جديد</button>
+            <button class="full-btn danger" onclick="closeSelectUserModal()">إلغاء</button>
+        </div>
+    </div>
+
+    <div id="notificationsModal" class="modal">
+        <div class="modal-content">
+            <h3>🔔 الإشعارات</h3>
+            <div class="toolbar two">
+                <button class="full-btn" onclick="markAllNotificationsAsRead()">تعليم كمقروء</button>
+                <button class="full-btn danger" onclick="clearNotifications()">مسح الكل</button>
+            </div>
+            <ul id="notificationsList" class="notifications-list"></ul>
+            <button class="full-btn" onclick="closeNotifications()">إغلاق</button>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <h3>⚙️ الإعدادات</h3>
+            <label>مدة الإرجاع بالأيام:</label>
+            <input type="number" id="returnDurationInput" value="7" min="1" max="30">
+            <button class="full-btn" onclick="saveReturnDuration()">💾 حفظ المدة</button>
+
+            <div class="stats-box">
+                <h4>📊 إحصائيات النظام</h4>
+                <div>📚 الكتب: <span id="statsBooks">0</span></div>
+                <div>👥 المستخدمون: <span id="statsUsers">0</span></div>
+                <div>📝 الاستعارات: <span id="statsLoans">0</span></div>
+                <div>🔔 الإشعارات: <span id="statsNotifications">0</span></div>
+            </div>
+
+            <h4>🔄 إدارة البيانات</h4>
+            <button class="full-btn" onclick="exportData()">💾 تصدير البيانات</button>
+            <button class="full-btn" onclick="importData()">📂 استيراد البيانات</button>
+            <button class="full-btn danger" onclick="clearAllData()">🗑️ حذف جميع البيانات</button>
+            <button class="full-btn" onclick="openSimpleImport()">📱 استيراد Excel / CSV</button>
+            <button class="full-btn" onclick="closeSettings()">إغلاق</button>
+        </div>
+    </div>
+
+    <div id="simpleImportModal" class="modal">
+        <div class="modal-content">
+            <h3>📂 استيراد البيانات</h3>
+            <div class="import-icon">📱</div>
+            <p class="center">اختر نوع البيانات المراد استيرادها:</p>
+            <button class="full-btn import-option" onclick="importUsersSimple()">👥 استيراد المستخدمين</button>
+            <button class="full-btn import-option" onclick="importBooksSimple()">📚 استيراد الكتب</button>
+            <p class="hint">💡 يمكنك اختيار ملف Excel أو CSV أو TXT من مدير ملفات الهاتف.</p>
+            <button class="full-btn" onclick="closeSimpleImport()">إلغاء</button>
+        </div>
+    </div>
+
+    <input type="file" id="simpleFileInput" accept=".xlsx,.xls,.csv,.txt" hidden>
+
+    <div id="addConfirmModal" class="modal">
+        <div class="modal-content">
+            <h3>✅ تمت الإضافة</h3>
+            <p id="addConfirmText" class="success-box"></p>
+            <button class="full-btn" onclick="el('addConfirmModal').style.display='none'">حسناً</button>
+        </div>
+    </div>
+
+    <div id="borrowConfirmModal" class="modal">
+        <div class="modal-content">
+            <h3>📚 تمت الاستعارة</h3>
+            <p id="borrowConfirmText" class="success-box"></p>
+            <button class="full-btn" onclick="closeBorrowConfirmModal()">حسناً</button>
+        </div>
+    </div>
+
+    <div id="returnConfirmModal" class="modal">
+        <div class="modal-content">
+            <h3>🔄 تم الإرجاع</h3>
+            <p id="returnConfirmText" class="success-box"></p>
+            <button class="full-btn" onclick="closeReturnConfirmModal()">حسناً</button>
+        </div>
+    </div>
+
+    <div id="deleteConfirmModal" class="modal">
+        <div class="modal-content">
+            <h3>⚠️ تأكيد الحذف</h3>
+            <p id="deleteConfirmText" class="warning-box"></p>
+            <div class="modal-actions">
+                <button class="full-btn" onclick="closeDeleteConfirm()">إلغاء</button>
+                <button class="full-btn danger" id="confirmDeleteBtn">حذف</button>
+            </div>
+        </div>
+    </div>
+
+    <button id="exitButton" class="exit-btn" onclick="exitApp()">خروج</button>
+    <script src="script.js"></script>
+</body>
+</html>
